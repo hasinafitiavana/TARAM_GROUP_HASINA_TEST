@@ -22,3 +22,17 @@
 | Les erreurs de la requête ne sont pas transmises au middleware Express. | Élevée | Utiliser try/catch puis next(error). |
 
 La correction  est dans partie_1/listingsRoutes.js
+
+## Extrait C — Webhook de paiement
+
+| Problème | Gravité | Correction proposée |
+|---|---|---|
+| Aucune authentification du webhook : une requête forgée peut confirmer un paiement. | Critique | Vérifier une signature HMAC du corps brut avec comparaison en temps constant. |
+| Aucun identifiant d'événement n'est dédupliqué. | Critique | Stocker `event.id` avec une contrainte unique et ignorer les doublons. |
+| Email et CRM sont appelés dans la requête HTTP ; le CRM peut prendre 8 secondes. | Critique | Persister un job/outbox puis répondre rapidement en 200. |
+| Les effets externes peuvent être exécutés deux fois après un retry. | Élevée | Rendre le traitement du worker idempotent avec `eventId`. |
+| Le contenu du payload n'est pas validé. | Élevée | Vérifier au minimum `id`, `type` et les champs requis du paiement. |
+| Les erreurs ne sont pas centralisées et la mise à jour n'est pas transactionnelle. | Élevée | Utiliser une transaction et transmettre les erreurs à `next`. |
+
+
+La correction  est dans partie_1/payementWebhooks.js
