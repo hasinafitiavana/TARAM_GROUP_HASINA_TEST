@@ -32,9 +32,8 @@ Cette commande exécute les tests unitaires du client CRM avec `node:test` et un
 
 ## Non réalisé
 
-- Partie 3 reste à rédiger dans `REPONSES.md`.
 - Le connecteur n'est pas branché à un véritable formulaire ou à un CRM réel : les tests utilisent un mock HTTP en mémoire.
 
 ## Temps passé
 
-À renseigner avant le rendu avec le temps réellement passé sur le test.
+Environ 1 h 55 min (de 08:00 à 09:55).
