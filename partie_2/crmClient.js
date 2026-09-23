@@ -1,4 +1,5 @@
 const DEFAULT_CRM_BASE_URL = "https://crm.example.com";
+const REQUEST_TIMEOUT_MS = 5_000;
 
 function normalizeLead(lead) {
   if (!lead || typeof lead !== "object") {
@@ -34,15 +35,29 @@ export async function createLead(lead) {
 
   const crmBaseUrl = process.env.CRM_BASE_URL || DEFAULT_CRM_BASE_URL;
   const crmLeadsUrl = new URL("/v1/leads", crmBaseUrl);
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
 
-  const response = await fetch(crmLeadsUrl, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(normalizeLead(lead)),
-  });
+  let response;
+  try {
+    response = await fetch(crmLeadsUrl, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(normalizeLead(lead)),
+      signal: controller.signal,
+    });
+  } catch (error) {
+    if (controller.signal.aborted) {
+      throw new Error("CRM request timed out");
+    }
+
+    throw error;
+  } finally {
+    clearTimeout(timeoutId);
+  }
 
   if (response.status !== 201) {
     throw new Error(`CRM request failed with status ${response.status}`);
